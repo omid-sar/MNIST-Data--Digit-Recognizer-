@@ -2,6 +2,9 @@ MINST (Digit Recognizer)
 ==============================
 MNIST ("Modified National Institute of Standards and Technology") is the de facto “hello world” dataset of computer vision. Since its release in 1999, this classic dataset of handwritten images has served as the basis for benchmarking classification algorithms. As new machine learning techniques emerge, MNIST remains a reliable resource for researchers and learners alike.
 
+
+we will investigate the application of a Convolutional Neural Network (CNN) based on the LeNet architecture to the MNIST dataset. Additionally, we'll leverage various strategies such as data augmentation, hyper-parameter optimization using Keras Tuner, and ensembling to enhance and optimize the performance of the network.
+
 Project Organization
 ------------
 
