@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split
 # from sklearn.pipeline import Pipeline
 # from sklearn.compose import ColumnTransformer
 # from sklearn.preprocessing import StandardScaler, MinMaxScaler
-# from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import BaseEstimator, TransformerMixin
 
 # 2.1 read data
 df_train = pd.read_csv("../../data/raw/train.csv")
