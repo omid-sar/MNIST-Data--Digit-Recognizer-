@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 import sys
+import pickle
 
 
 # 2.1 read data
@@ -10,6 +11,9 @@ from sklearn.model_selection import train_test_split
 df_train = pd.read_csv("../../data/raw/train.csv")
 X = df_train.drop("label", axis=1)
 y = df_train["label"]
+
+df_test = pd.read_csv("../../data/raw/test.csv")
+
 
 # 2.2 Create train and validation sets
 X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.1, random_state=42)
@@ -44,29 +48,16 @@ feature_pipeline = Pipeline(
 # create target pipeline for preprocessing which includes one hot encoding
 target_pipeline = Pipeline([("OneHotEncode", OneHotEncoder())])
 
-# X_train = feature_pipeline.fit_transform(X_train)
-# y_train = target_pipeline.fit_transform(y_train.values.reshape(-1, 1))
-# print(y_train.shape)
+X_train = feature_pipeline.fit_transform(X_train)
+y_train = target_pipeline.fit_transform(y_train.values.reshape(-1, 1))
+print(y_train.shape, X_train.shape)
 # y_train = target_pipeline.fit_transform(y_train.values.reshape(-1, 1)).toarray()
 
-print(y_train)
-# sort y_train by index
-print(y_train.sort_index())
-print(y_train.shape)
-print(type(y_train))
-# here since y_train is a pandas series, we need to convert it to numpy array and then reshape it to (-1, 1) to make it a 2D array
-print(y_train.values)
-print(y_train.values.shape)
-print(type(y_train.values))
-print(y_train.values.reshape(-1, 1))
-print(y_train.values.reshape(-1, 1).shape)
-print(target_pipeline.fit_transform(y_train.values.reshape(-1, 1)))
-print(target_pipeline.fit_transform(y_train.values.reshape(-1, 1)).shape)
-print(target_pipeline.fit_transform(y_train.values.reshape(-1, 1)).toarray())
-print(target_pipeline.fit_transform(y_train.values.reshape(-1, 1)).toarray().shape)
-# find max value in x_train
-print(X_train.max())
-X_train.shape
-X_train.max(axis=1)
-X_train[1, :].max()
-type(X_train)
+X_val = feature_pipeline.fit_transform(X_val)
+y_val = target_pipeline.fit_transform(y_val.values.reshape(-1, 1)).toarray()
+print(y_val.shape, X_val.shape)
+
+X_test = feature_pipeline.fit_transform(df_test)
+print(X_test.shape)
+
+# 2.4 Save the preprocessed data
