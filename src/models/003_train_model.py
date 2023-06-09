@@ -10,7 +10,7 @@ from tensorflow.keras.metrics import Precision, Recall
 import tensorflow.keras.layers as layers  # for building layers
 from keras.utils.vis_utils import plot_model
 
-# 3.1 read data:
+# ----------------------------------3.1 read data-------------------------------
 
 with open("../../data/processed/data.pkl", "rb") as file:
     X_train, y_train, X_val, y_val, X_test = pickle.load(file)
@@ -64,7 +64,7 @@ print("Precision: ", precision.result().numpy())
 print("Recall: ", Recall.result().numpy())
 """
 
-# 3.2 Build Network and train
+# -------------------------- 3.2 Build and Train Network ------------
 
 
 # 3.2.1 Build model based on Adam optimizer (with default learning rate) and sparse_categorical_crossentropy loss function
@@ -92,6 +92,4 @@ def built_model():
 
 model = built_model()
 print(built_model().summary())
-
-
 plot_model(model)

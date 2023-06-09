@@ -5,7 +5,7 @@ import sys
 import pickle
 
 
-# 2.1 read data
+# -------------------------------2.1 read data---------------------------------
 from sklearn.model_selection import train_test_split
 
 df_train = pd.read_csv("../../data/raw/train.csv")
@@ -15,12 +15,12 @@ y = df_train["label"]
 df_test = pd.read_csv("../../data/raw/test.csv")
 
 
-# 2.2 Create train and validation sets
+# ------------------ 2.2 Create train and validation sets-----------------------
 X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.1, random_state=42)
 print(X_train.shape, y_train.shape, X_val.shape, y_val.shape)
 
 
-# 2.3 Preprocessing pipeline
+# ------------------------ 2.3 Preprocessing pipeline--------------------------
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
@@ -60,6 +60,6 @@ print(y_val.shape, X_val.shape)
 X_test = feature_pipeline.fit_transform(df_test)
 print(X_test.shape)
 
-# 2.4 Save the preprocessed data
+# --------------------------2.4 Save the preprocessed data----------------------
 with open("../../data/processed/data.pkl", "wb") as file:
     pickle.dump((X_train, y_train, X_val, y_val, X_test), file)
