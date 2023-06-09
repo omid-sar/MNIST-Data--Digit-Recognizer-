@@ -61,3 +61,5 @@ X_test = feature_pipeline.fit_transform(df_test)
 print(X_test.shape)
 
 # 2.4 Save the preprocessed data
+with open("../../data/processed/data.pkl", "wb") as file:
+    pickle.dump((X_train, y_train, X_val, y_val, X_test), file)
