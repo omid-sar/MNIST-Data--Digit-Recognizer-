@@ -8,6 +8,7 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.metrics import Precision, Recall
 import tensorflow.keras.layers as layers  # for building layers
+from keras.utils.vis_utils import plot_model
 
 # 3.1 read data:
 
@@ -90,8 +91,7 @@ def built_model():
 
 
 model = built_model()
-built_model().summary()
+print(built_model().summary())
 
-from keras.utils.vis_utils import plot_model
 
 plot_model(model)
