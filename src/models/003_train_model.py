@@ -9,14 +9,22 @@ from tensorflow import keras
 from tensorflow.keras.metrics import Precision, Recall
 import tensorflow.keras.layers as layers  # for building layers
 from keras.utils.vis_utils import plot_model
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
+
+import matplotlib.pyplot as plt
+
+sys.path.append("../../src/visualization/")
+from plot_settings import set_plot_style
+
+set_plot_style()
 
 # ----------------------------------3.1 read data-------------------------------
 
 with open("../../data/processed/data.pkl", "rb") as file:
     X_train, y_train, X_val, y_val, X_test = pickle.load(file)
-
+X_train.shape, y_train.shape, X_val.shape, y_val.shape, X_test.shape
+y_train[0]
 """
 # Precision (using keras backend)
 def precision_metric(y_true, y_pred):
@@ -70,6 +78,8 @@ print("Recall: ", Recall.result().numpy())
 
 
 # 3.2.1 Build model based on Adam optimizer (with default learning rate) and sparse_categorical_crossentropy loss function
+
+
 def build_model():
     inputs = keras.Input(shape=(28, 28, 1))
     x = layers.Conv2D(32, (3, 3), activation="relu")(inputs)
@@ -87,7 +97,7 @@ def build_model():
 
     model = keras.Model(inputs=inputs, outputs=outputs, name="mnist_model")
     model.compile(
-        optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"]
+        optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"]
     )
     return model
 
@@ -99,6 +109,7 @@ plot_model(model)
 
 
 # ----------------------------- 3.2 Build Network(Ver2) -------------------------------
+"""
 def built_model(
     input_shape=(28, 28, 1),
     dropout_rates=[0.25, 0.25, 0.5],
@@ -141,54 +152,68 @@ def built_model(
 
     # Define the output layer
     outputs = layers.Dense(10, activation="softmax")(x)
-
-    # Define the model and compile it
+       # Define the model and compile it
     model = keras.Model(inputs=inputs, outputs=outputs)
     model.compile(
         optimizer=optimizer(learning_rate),
-        loss="sparse_categorical_crossentropy",
+        loss="categorical_crossentropy",
         metrics=["accuracy"],
     )
 
-    # Define early stopping and model checkpointing
-    early_stopping = EarlyStopping(
-        monitor="val_loss",
-        patience=early_stopping_patience,
-        mode="min",
-        restore_best_weights=True,
-    )
-    model_checkpoint = ModelCheckpoint(
-        model_checkpoint_path, monitor="val_loss", mode="min", save_best_only=True
-    )
-
-    return model, [early_stopping, model_checkpoint]
+    return model
 
 
-model = built_model()[0]
-built_model()[0].summary()
-print(built_model()[0].summary())
+model = built_model()
+built_model().summary()
+print(built_model().summary())
 plot_model(model)
+"""
 
 
 # ----------------------------- 3.3 Train model ---------------------------------
-# 3.3.1 Train model
-history = model.fit()
+# 3.3.1 fit model
+# 3.3.1.1 callbacks
 
+model_checkpoint_path = "../../models/best_model.h5"
+
+callbacks_list = [
+    EarlyStopping(
+        monitor="val_loss",
+        patience=10,
+        verbose=1,
+        mode="min",
+        restore_best_weights=True,
+    ),
+    ReduceLROnPlateau(
+        monitor="val_loss", factor=0.1, patience=3, verbose=1, mode="min"
+    ),
+    ModelCheckpoint(
+        model_checkpoint_path,
+        monitor="val_loss",
+        save_best_only=True,
+        verbose=1,
+        mode="min",
+        histogram_freq=1,
+    ),
+]
+# 3.3.1.2 parameters
+batch_size = 32
+epochs = 40
 
 history = model.fit(
     X_train,
     y_train,
     validation_data=(X_val, y_val),
-    epochs=40,
     batch_size=batch_size,
-    callbacks=[
-        keras.callbacks.EarlyStopping(
-            monitor="val_loss",
-            mode="min",
-            patience=10,
-            min_delta=0.005,
-            restore_best_weights=True,
-        ),
-        keras.callbacks.ReduceLROnPlateau(monitor="val_loss", patience=3),
-    ],
+    epochs=epochs,
+    callbacks=callbacks_list,
+    verbose=1,
 )
+
+
+plt.plot(history.history["loss"])
+plt.plot(history.history["val_loss"])
+plt.title("Model loss")
+plt.xlabel("Epochs")
+plt.ylabel("Loss")
+plt.legend(["Loss", "Val loss"])

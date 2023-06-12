@@ -49,9 +49,9 @@ feature_pipeline = Pipeline(
 target_pipeline = Pipeline([("OneHotEncode", OneHotEncoder())])
 
 X_train = feature_pipeline.fit_transform(X_train)
-y_train = target_pipeline.fit_transform(y_train.values.reshape(-1, 1))
+y_train = target_pipeline.fit_transform(y_train.values.reshape(-1, 1)).toarray()
 print(y_train.shape, X_train.shape)
-# y_train = target_pipeline.fit_transform(y_train.values.reshape(-1, 1)).toarray()
+
 
 X_val = feature_pipeline.fit_transform(X_val)
 y_val = target_pipeline.fit_transform(y_val.values.reshape(-1, 1)).toarray()
@@ -59,7 +59,7 @@ print(y_val.shape, X_val.shape)
 
 X_test = feature_pipeline.fit_transform(df_test)
 print(X_test.shape)
-
+y_train
 # --------------------------2.4 Save the preprocessed data----------------------
 with open("../../data/processed/data.pkl", "wb") as file:
     pickle.dump((X_train, y_train, X_val, y_val, X_test), file)
