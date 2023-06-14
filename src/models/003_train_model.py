@@ -4,6 +4,8 @@ import os
 import sys
 import pickle
 
+
+from sklearn.model_selection import train_test_split
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.metrics import Precision, Recall
@@ -25,7 +27,14 @@ set_plot_style()
 with open("../../data/processed/data.pkl", "rb") as file:
     X_train, y_train, X_val, y_val, X_test = pickle.load(file)
 X_train.shape, y_train.shape, X_val.shape, y_val.shape, X_test.shape
-y_train[0]
+
+# Use a subset of data to train the model
+X_train_sample, _, y_train_sample, _ = train_test_split(
+    X_train, y_train, test_size=0.9, stratify=y_train, random_state=42
+)
+
+# Now, you can use X_train_sample and y_train_sample to train your model.
+
 """
 # Precision (using keras backend)
 def precision_metric(y_true, y_pred):
@@ -76,11 +85,10 @@ print("Recall: ", Recall.result().numpy())
 """
 
 # ----------------------------- 3.2 Build Network(Ver1) -------------------------------
-
-
 # 3.2.1 Build model based on Adam optimizer (with default learning rate) and sparse_categorical_crossentropy loss function
 
 
+"""
 def build_model():
     inputs = keras.Input(shape=(28, 28, 1))
     x = layers.Conv2D(32, (3, 3), activation="relu")(inputs)
@@ -107,10 +115,11 @@ model = build_model()
 build_model().summary()
 print(build_model().summary())
 plot_model(model)
+"""
 
 
 # ----------------------------- 3.2 Build Network(Ver2) -------------------------------
-"""
+# 3.2.1 Build model based on Adam optimizer (with default learning rate) and sparse_categorical_crossentropy loss function
 def built_model(
     input_shape=(28, 28, 1),
     dropout_rates=[0.25, 0.25, 0.5],
@@ -153,7 +162,7 @@ def built_model(
 
     # Define the output layer
     outputs = layers.Dense(10, activation="softmax")(x)
-       # Define the model and compile it
+    # Define the model and compile it
     model = keras.Model(inputs=inputs, outputs=outputs)
     model.compile(
         optimizer=optimizer(learning_rate),
@@ -168,7 +177,6 @@ model = built_model()
 built_model().summary()
 print(built_model().summary())
 plot_model(model)
-"""
 
 
 # ----------------------------- 3.3 Train model ---------------------------------
@@ -181,6 +189,7 @@ callbacks_list = [
     EarlyStopping(
         monitor="val_loss",
         patience=10,
+        min_delta=0.002,
         verbose=1,
         mode="min",
         restore_best_weights=True,
@@ -202,8 +211,8 @@ batch_size = 32
 epochs = 40
 
 history = model.fit(
-    X_train,
-    y_train,
+    X_train_sample,
+    y_train_sample,
     validation_data=(X_val, y_val),
     batch_size=batch_size,
     epochs=epochs,
@@ -212,9 +221,24 @@ history = model.fit(
 )
 
 
-plt.plot(history.history["loss"], linewidth=5)
+set_plot_style()
+plt.plot(history.history["loss"])
 plt.plot(history.history["val_loss"])
 plt.title("Model loss")
 plt.xlabel("Epochs")
 plt.ylabel("Loss")
 plt.legend(["Loss", "Val loss"])
+
+
+plt.plot(history.history["accuracy"])
+plt.plot(history.history["val_accuracy"])
+plt.title("Model accuracy")
+plt.xlabel("Epochs")
+plt.ylabel("Accuracy")
+
+plt.plot(history.history["f1_metric"], linewidth=5)
+plt.plot(history.history["val_f1_metric"])
+plt.title("Model F1")
+plt.xlabel("Epochs")
+plt.ylabel("F1")
+plt.legend(["Training f1", "Validation f1"])
