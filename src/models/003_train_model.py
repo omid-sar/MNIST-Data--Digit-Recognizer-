@@ -4,7 +4,7 @@ import os
 import sys
 import pickle
 
-
+from keras import backend as K
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
 from tensorflow import keras
@@ -35,57 +35,32 @@ X_train_sample, _, y_train_sample, _ = train_test_split(
 
 # Now, you can use X_train_sample and y_train_sample to train your model.
 
-"""
+# ----------------------------- 3.2 define metrics -------------------------------
 # Precision (using keras backend)
-def precision_metric(y_true, y_pred):
-    threshold = 0.5  # Training threshold 0.5
-    y_pred_y = K.cast(K.greater(K.clip(y_pred, 0, 1), threshold), K.floatx())
 
-    true_positives = K.sum(K.clip(y_true * y_pred, 0, 1))
-    false_negatives = K.sum(K.clip(y_true * (1-y_pred), 0, 1))
-    false_positives = K.sum(K.clip((1-y_true) * y_pred, 0, 1))
-    true_negatives = K.sum(K.clip((1 - y_true) * (1-y_pred), 0, 1))
 
-    precision = true_positives / (true_positives + false_positives + K.epsilon())
-    return precision
-
-# Recall (using keras backend)
-def recall_metric(y_true, y_pred):
-    threshold = 0.5 #Training threshold 0.5
-    y_pred = K.cast(K.greater(K.clip(y_pred, 0, 1), threshold), K.floatx())
-
-    true_positives = K.sum(K.clip(y_true * y_pred, 0, 1))
-    false_negatives = K.sum(K.clip(y_true * (1-y_pred), 0, 1))
-    false_positives = K.sum(K.clip((1-y_true) * y_pred, 0, 1))
-    true_negatives = K.sum(K.clip((1 - y_true) * (1-y_pred), 0, 1))
-
-    recall = true_positives / (true_positives + false_negatives + K.epsilon())
+def recall_m(y_true, y_pred):
+    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+    possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
+    recall = true_positives / (possible_positives + K.epsilon())
     return recall
 
-# F1-score (using keras backend)
-def f1_metric(y_true, y_pred):
-    precision = precision_metric(y_true, y_pred)
-    recall = recall_metric(y_true, y_pred)
-    f1 = 2 * ((precision * recall) / (recall+precision+K.epsilon()))
-    return f1
 
-"""
+def precision_m(y_true, y_pred):
+    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+    predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
+    precision = true_positives / (predicted_positives + K.epsilon())
+    return precision
 
-"""
-# instead of using keras backend, we can use tensorflow metrics
-from tensorflow.keras.metrics import Precision, Recall
-threshold = 0.5
-precision = Precision(thresholds=threshold)
-Recall = Recall(thresholds=threshold)
 
-precision.update_state(y_train, y_pred)
-Recall.update_state(y_train, y_pred)
-print("Precision: ", precision.result().numpy())
-print("Recall: ", Recall.result().numpy())
-"""
+def f1_m(y_true, y_pred):
+    precision = precision_m(y_true, y_pred)
+    recall = recall_m(y_true, y_pred)
+    return 2 * ((precision * recall) / (precision + recall + K.epsilon()))
 
-# ----------------------------- 3.2 Build Network(Ver1) -------------------------------
-# 3.2.1 Build model based on Adam optimizer (with default learning rate) and sparse_categorical_crossentropy loss function
+
+# ----------------------------- 3.3 Build Network(Ver1) -------------------------------
+# 3.3.1 Build model based on Adam optimizer (with default learning rate) and sparse_categorical_crossentropy loss function
 
 
 """
@@ -119,7 +94,7 @@ plot_model(model)
 
 
 # ----------------------------- 3.2 Build Network(Ver2) -------------------------------
-# 3.2.1 Build model based on Adam optimizer (with default learning rate) and sparse_categorical_crossentropy loss function
+# 3.3.1 Build model based on Adam optimizer (with default learning rate) and sparse_categorical_crossentropy loss function
 def built_model(
     input_shape=(28, 28, 1),
     dropout_rates=[0.25, 0.25, 0.5],
@@ -167,7 +142,7 @@ def built_model(
     model.compile(
         optimizer=optimizer(learning_rate),
         loss="categorical_crossentropy",
-        metrics=["accuracy"],
+        metrics=["accuracy", f1_m, precision_m, recall_m],
     )
 
     return model
@@ -179,9 +154,9 @@ print(built_model().summary())
 plot_model(model)
 
 
-# ----------------------------- 3.3 Train model ---------------------------------
-# 3.3.1 fit model
-# 3.3.1.1 callbacks
+# ----------------------------- 3.4 Train model ---------------------------------
+# 3.4.1 fit model
+# 3.4.1.1 callbacks
 
 model_checkpoint_path = "../../models/best_model.h5"
 
@@ -220,25 +195,33 @@ history = model.fit(
     verbose=1,
 )
 
+# Create a new figure and a subplots grid
+fig, axs = plt.subplots(3, 1, figsize=(10, 15))
 
-set_plot_style()
-plt.plot(history.history["loss"])
-plt.plot(history.history["val_loss"])
-plt.title("Model loss")
-plt.xlabel("Epochs")
-plt.ylabel("Loss")
-plt.legend(["Loss", "Val loss"])
+# Plot loss
+axs[0].plot(history.history["loss"])
+axs[0].plot(history.history["val_loss"])
+axs[0].set_title("Model loss")
+axs[0].set_xlabel("Epochs")
+axs[0].set_ylabel("Loss")
+axs[0].legend(["Loss", "Val loss"])
 
+# Plot accuracy
+axs[1].plot(history.history["accuracy"])
+axs[1].plot(history.history["val_accuracy"])
+axs[1].set_title("Model accuracy")
+axs[1].set_xlabel("Epochs")
+axs[1].set_ylabel("Accuracy")
+axs[1].legend(["Accuracy", "Val Accuracy"])
 
-plt.plot(history.history["accuracy"])
-plt.plot(history.history["val_accuracy"])
-plt.title("Model accuracy")
-plt.xlabel("Epochs")
-plt.ylabel("Accuracy")
+# Plot F1 score
+axs[2].plot(history.history["f1_m"], linewidth=5)
+axs[2].plot(history.history["val_f1_m"])
+axs[2].set_title("Model F1")
+axs[2].set_xlabel("Epochs")
+axs[2].set_ylabel("F1")
+axs[2].legend(["Training f1", "Validation f1"])
 
-plt.plot(history.history["f1_metric"], linewidth=5)
-plt.plot(history.history["val_f1_metric"])
-plt.title("Model F1")
-plt.xlabel("Epochs")
-plt.ylabel("F1")
-plt.legend(["Training f1", "Validation f1"])
+# Display the figure
+plt.tight_layout()
+plt.show()
