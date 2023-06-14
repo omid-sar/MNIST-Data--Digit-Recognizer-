@@ -5,7 +5,7 @@ from cycler import cycler
 
 def set_plot_style():
     # Use a qualitative colormap which is beneficial for categorical data
-    colors = cycler(color=plt.get_cmap("Set3").colors)
+    colors = cycler(color=plt.get_cmap("Set1").colors)
 
     mpl.style.use("ggplot")
 
@@ -23,7 +23,7 @@ def set_plot_style():
     # Increased linewidth for axes for better visibility
     mpl.rcParams["axes.linewidth"] = 1.5
     # Increased tick width for better visibility
-    mpl.rcParams["lines.linewidth"] = 5
+    mpl.rcParams["lines.linewidth"] = 3
 
     mpl.rcParams["xtick.color"] = "black"
     mpl.rcParams["ytick.color"] = "black"
