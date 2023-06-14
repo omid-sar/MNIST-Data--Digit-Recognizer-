@@ -22,6 +22,8 @@ def set_plot_style():
 
     # Increased linewidth for axes for better visibility
     mpl.rcParams["axes.linewidth"] = 1.5
+    # Increased tick width for better visibility
+    mpl.rcParams["lines.linewidth"] = 5
 
     mpl.rcParams["xtick.color"] = "black"
     mpl.rcParams["ytick.color"] = "black"

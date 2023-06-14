@@ -12,6 +12,7 @@ from keras.utils.vis_utils import plot_model
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
 
+
 import matplotlib.pyplot as plt
 
 sys.path.append("../../src/visualization/")
@@ -211,7 +212,7 @@ history = model.fit(
 )
 
 
-plt.plot(history.history["loss"])
+plt.plot(history.history["loss"], linewidth=5)
 plt.plot(history.history["val_loss"])
 plt.title("Model loss")
 plt.xlabel("Epochs")
