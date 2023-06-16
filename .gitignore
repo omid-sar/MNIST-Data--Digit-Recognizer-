@@ -91,3 +91,4 @@ target/
 
 # Ignore model files
 /models/*.h5
+/models/*
