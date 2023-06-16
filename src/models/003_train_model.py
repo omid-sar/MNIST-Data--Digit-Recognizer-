@@ -192,7 +192,7 @@ history = model.fit(
     batch_size=batch_size,
     epochs=epochs,
     callbacks=callbacks_list,
-    verbose=1,
+    verbose=2,
 )
 
 # Create a new figure and a subplots grid
