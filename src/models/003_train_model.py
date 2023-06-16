@@ -196,7 +196,7 @@ history = model.fit(
 )
 
 # Create a new figure and a subplots grid
-fig, axs = plt.subplots(3, 1, figsize=(10, 15))
+fig, axs = plt.subplots(3, 1)
 
 # Plot loss
 axs[0].plot(history.history["loss"])
