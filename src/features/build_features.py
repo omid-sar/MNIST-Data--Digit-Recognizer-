@@ -4,10 +4,16 @@ import os
 import sys
 import pickle
 
-
-# -------------------------------2.1 read data---------------------------------
 from sklearn.model_selection import train_test_split
 
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.preprocessing import OneHotEncoder
+
+
+# -------------------------------2.1 read data---------------------------------
 df_train = pd.read_csv("../../data/raw/train.csv")
 X = df_train.drop("label", axis=1)
 y = df_train["label"]
@@ -21,11 +27,6 @@ print(X_train.shape, y_train.shape, X_val.shape, y_val.shape)
 
 
 # ------------------------ 2.3 Preprocessing pipeline--------------------------
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.pipeline import Pipeline
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
-from sklearn.preprocessing import OneHotEncoder
 
 
 # Create a custom transformer to add channel dimension to the data. Since the data is black and white, we have only one channel.
