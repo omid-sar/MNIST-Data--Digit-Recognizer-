@@ -218,8 +218,29 @@ with open("../../models/history.pkl", "wb") as file:
 
 
 # ------------------------ 5. Training Augmented Data -------------------------
+"""
+Through data augmentation, we can create artificial data, or in this case, new images,
+by slightly altering the images in our training set via various transformations.
+In this particular notebook, the transformations we'll employ involve shifting,
+rotating, and zooming the images to fabricate new instances.
+
+Data augmentation provides a significant advantage as it acts as a regularizer, 
+thus mitigating overfitting during model training. This is attributed to the increase 
+in artificially created images which prevent the model from overfitting to 
+particular examples and force it to generalize.
+Consequently, the model becomes more resilient and 
+generally exhibits improved overall performance.
+"""
+
 
 # 5.1.1 Data augmentation
 datagen = ImageDataGenerator(
     rotation_range=10, zoom_range=0.1, width_shift_range=0.1, height_shift_range=0.1
 )
+
+"""
+ImageDataGenerator is an exceptional class in Keras that facilitates real-time 
+image augmentation while our model is in the training phase. This capability means 
+we can feed it into our model, and it will continuously generate new, 
+augmented images in batches during the training process.
+"""
