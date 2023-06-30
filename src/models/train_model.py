@@ -19,10 +19,11 @@ import matplotlib.pyplot as plt
 
 sys.path.append("../../src/visualization/")
 from plot_settings import set_plot_style
+
 set_plot_style()
 
 
-# ----------------------------------3.1 read data-------------------------------
+# ---------------------------------- 1. read data-------------------------------
 
 with open("../../data/processed/data.pkl", "rb") as file:
     X_train, y_train, X_val, y_val, X_test = pickle.load(file)
@@ -35,12 +36,12 @@ X_train_sample, _, y_train_sample, _ = train_test_split(
 
 # Now, you can use X_train_sample and y_train_sample to train your model.
 
-# ----------------------------- 3.2 read defined metrics from metrics.py -------------------------------
+# ----------------------------- 1.2 read defined metrics from metrics.py -------------------------------
 # Precision (using keras backend)
 sys.path.append("../../models")
 from metrics import precision_m, recall_m, f1_m
 
-# ----------------------------- 3.3 Build Network(Ver1) -------------------------------
+# ----------------------------- 2. Build Network(Ver1) -------------------------------
 # 3.3.1 Build model based on Adam optimizer (with default learning rate) and sparse_categorical_crossentropy loss function
 
 
@@ -74,7 +75,7 @@ plot_model(model)
 """
 
 
-# ----------------------------- 3.2 Build Network(Ver2) -------------------------------
+# ----------------------------- 3. Build Network(Ver2) -------------------------------
 # 3.3.1 Build model based on Adam optimizer (with default learning rate) and sparse_categorical_crossentropy loss function
 def built_model(
     input_shape=(28, 28, 1),
@@ -135,7 +136,7 @@ print(built_model().summary())
 plot_model(model)
 
 
-# ----------------------------- 3.4 Train model ---------------------------------
+# ----------------------------- 4. Train model ---------------------------------
 # 3.4.1 fit model
 # 3.4.1.1 callbacks
 
@@ -208,7 +209,7 @@ plt.tight_layout()
 plt.show()
 
 
-# ----------------------------- 3.5 Save ---------------------------------
+# ----------------------------- 4.2 Save ---------------------------------
 # 3.5.1 Save model
 model.save("../../models/final_model.h5")
 # 3.5.2 Save history
