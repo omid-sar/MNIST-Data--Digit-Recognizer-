@@ -13,6 +13,7 @@ import tensorflow.keras.layers as layers  # for building layers
 from keras.utils.vis_utils import plot_model
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
+from keras.preprocessing.image import ImageDataGenerator
 
 
 import matplotlib.pyplot as plt
@@ -137,8 +138,8 @@ plot_model(model)
 
 
 # ----------------------------- 4. Train model ---------------------------------
-# 3.4.1 fit model
-# 3.4.1.1 callbacks
+# 4.1 fit model
+# 4.1.1 callbacks
 
 model_checkpoint_path = "../../models/best_model.h5"
 
@@ -163,7 +164,7 @@ callbacks_list = [
         histogram_freq=1,
     ),
 ]
-# 3.3.1.2 parameters
+# 4.1.2 parameters
 batch_size = 32
 epochs = 40
 
@@ -209,9 +210,16 @@ plt.tight_layout()
 plt.show()
 
 
-# ----------------------------- 4.2 Save ---------------------------------
-# 3.5.1 Save model
+# 4.1.3 Save model
 model.save("../../models/final_model.h5")
 # 3.5.2 Save history
 with open("../../models/history.pkl", "wb") as file:
     pickle.dump(history.history, file)
+
+
+# ------------------------ 5. Training Augmented Data -------------------------
+
+# 5.1.1 Data augmentation
+datagen = ImageDataGenerator(
+    rotation_range=10, zoom_range=0.1, width_shift_range=0.1, height_shift_range=0.1
+)
