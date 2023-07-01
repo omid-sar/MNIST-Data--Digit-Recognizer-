@@ -78,7 +78,7 @@ plot_model(model)
 
 # ----------------------------- 3. Build Network(Ver2) -------------------------------
 # 3.3.1 Build model based on Adam optimizer (with default learning rate) and sparse_categorical_crossentropy loss function
-def built_model(
+def build_model(
     input_shape=(28, 28, 1),
     dropout_rates=[0.25, 0.25, 0.5],
     learning_rate=0.001,
@@ -131,9 +131,9 @@ def built_model(
     return model
 
 
-model = built_model()
-built_model().summary()
-print(built_model().summary())
+model = build_model()
+build_model().summary()
+print(build_model().summary())
 plot_model(model)
 
 
