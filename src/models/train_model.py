@@ -244,3 +244,87 @@ image augmentation while our model is in the training phase. This capability mea
 we can feed it into our model, and it will continuously generate new, 
 augmented images in batches during the training process.
 """
+
+
+def build_model_hp(hp):
+    inp = keras.layers.Input(shape=[28, 28, 1])
+
+    dropout = hp.Choice("conv_block_dropout", [0.125, 0.25, 0.375, 0.5])
+    conv_kernel_size = hp.Choice(
+        "conv_kernel_size", [5]
+    )  # Kernel size 5 is optimal after mutliple testing experiments
+
+    n_layers = hp.Choice("n_conv_blocks", [2, 3, 4])
+
+    filter_choice = hp.Choice("filter_combination_choice", [0, 1, 2, 3])
+
+    filter_combinations_2 = [[16, 32], [32, 64], [64, 128], [128, 256]]
+    filter_combinations_3 = [[16, 32, 48], [16, 32, 64], [32, 64, 128], [64, 128, 256]]
+    filter_combinations_4 = [
+        [16, 16, 32, 32],
+        [32, 32, 64, 64],
+        [64, 64, 128, 128],
+        [128, 128, 256, 256],
+    ]
+
+    if n_layers == 2:
+        filter_settings = filter_combinations_2[filter_choice]
+    elif n_layers == 3:
+        filter_settings = filter_combinations_3[filter_choice]
+    elif n_layers == 4:
+        filter_settings = filter_combinations_4[filter_choice]
+
+    for i in range(n_layers):
+        if i == 0:
+            x = keras.layers.Conv2D(
+                filters=filter_settings[i],
+                kernel_size=conv_kernel_size,
+                strides=1,
+                padding="SAME",
+                activation="relu",
+            )(inp)
+        else:
+            x = keras.layers.Conv2D(
+                filters=filter_settings[i],
+                kernel_size=conv_kernel_size,
+                strides=1,
+                padding="SAME",
+                activation="relu",
+            )(x)
+
+        x = keras.layers.MaxPool2D(pool_size=2)(x)
+        x = keras.layers.BatchNormalization()(x)
+        x = keras.layers.Dropout(dropout)(x)
+
+    x = keras.layers.Flatten()(x)
+
+    n_fc_layers = hp.Choice("n_fc_layers", [1, 2, 3])
+
+    fc_choice = hp.Choice("fc_units_combination_choice", [0, 1])
+
+    fc_combinations_1 = [[128], [256]]
+    fc_combinations_2 = [[128, 64], [256, 128]]
+    fc_combinations_3 = [[512, 256, 128], [256, 128, 64]]
+
+    if n_fc_layers == 1:
+        fc_units = fc_combinations_1[fc_choice]
+    elif n_fc_layers == 2:
+        fc_units = fc_combinations_2[fc_choice]
+    elif n_fc_layers == 3:
+        fc_units = fc_combinations_3[fc_choice]
+
+    for j in range(n_fc_layers):
+        x = keras.layers.Dense(fc_units[j], activation="relu")(x)
+        x = keras.layers.Dropout(hp.Choice("fc_dropout", [0.125, 0.25, 0.5]))(x)
+
+    out = keras.layers.Dense(10, activation="softmax")(x)
+
+    model = keras.Model(inputs=inp, outputs=out)
+
+    model.compile(
+        loss=keras.losses.CategoricalCrossentropy(),
+        optimizer=keras.optimizers.Adam(learning_rate=0.0001),
+        metrics=["accuracy", f1_metric, recall_metric, precision_metric],
+    )
+
+    return model
