@@ -244,8 +244,30 @@ image augmentation while our model is in the training phase. This capability mea
 we can feed it into our model, and it will continuously generate new, 
 augmented images in batches during the training process.
 """
+model2, _, _ = build_model()
+train_generator = datagen.flow(X_train, y_train, batch_size=batch_size)
+steps_per_epoch = train_generator.n // train_generator.batch_size
+print(train_generator.n, train_generator.batch_size)
+steps_per_epoch
+history2 = model2.fit(
+    train_generator,
+    validation_data=(X_val, y_val),
+    epochs=40,
+    steps_per_epoch=steps_per_epoch,
+    callbacks=[
+        keras.callbacks.EarlyStopping(
+            monitor="val_loss",
+            mode="min",
+            patience=10,
+            min_delta=0.005,
+            restore_best_weights=True,
+        ),
+        keras.callbacks.ReduceLROnPlateau(monitor="val_loss", patience=3),
+    ],
+)
 
 
+# ------------------------ 6. Hyperparameter Tuning ----------------------------
 def build_model_hp(hp):
     inp = keras.layers.Input(shape=[28, 28, 1])
 
