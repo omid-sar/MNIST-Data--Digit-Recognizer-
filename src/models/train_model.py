@@ -250,12 +250,36 @@ train_generator = datagen.flow(X_train_sample, y_train_sample, batch_size=batch_
 steps_per_epoch = train_generator.n // train_generator.batch_size
 print(train_generator.n, train_generator.batch_size, steps_per_epoch)
 
+model_checkpoint_path = "../../models/augmented_best_model.h5"
+
+augmented_callbacks_list = [
+    EarlyStopping(
+        monitor="val_loss",
+        patience=10,
+        min_delta=0.002,
+        verbose=1,
+        mode="min",
+        restore_best_weights=True,
+    ),
+    ReduceLROnPlateau(
+        monitor="val_loss", factor=0.1, patience=3, verbose=1, mode="min"
+    ),
+    ModelCheckpoint(
+        model_checkpoint_path,
+        monitor="val_loss",
+        save_best_only=True,
+        verbose=1,
+        mode="min",
+        histogram_freq=1,
+    ),
+]
+
 history2 = model2.fit(
     train_generator,
     validation_data=(X_val, y_val),
     epochs=40,
     steps_per_epoch=steps_per_epoch,
-    callbacks=callbacks_list,
+    callbacks=augmented_callbacks_list,
     verbose=2,
 )
 
