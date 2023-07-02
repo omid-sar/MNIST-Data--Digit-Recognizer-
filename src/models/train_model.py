@@ -244,6 +244,51 @@ image augmentation while our model is in the training phase. This capability mea
 we can feed it into our model, and it will continuously generate new, 
 augmented images in batches during the training process.
 """
+model2 = build_model()
+train_generator = datagen.flow(X_train_sample, y_train_sample, batch_size=batch_size)
+
+steps_per_epoch = train_generator.n // train_generator.batch_size
+print(train_generator.n, train_generator.batch_size, steps_per_epoch)
+
+history2 = model2.fit(
+    train_generator,
+    validation_data=(X_val, y_val),
+    epochs=40,
+    steps_per_epoch=steps_per_epoch,
+    callbacks=callbacks_list,
+    verbose=2,
+)
+
+# Create a new figure and a subplots grid
+fig, axs = plt.subplots(3, 1)
+
+# Plot loss
+axs[0].plot(history2.history["loss"])
+axs[0].plot(history2.history["val_loss"])
+axs[0].set_title("Model loss")
+axs[0].set_xlabel("Epochs")
+axs[0].set_ylabel("Loss")
+axs[0].legend(["Loss", "Val loss"])
+
+# Plot accuracy
+axs[1].plot(history2.history["accuracy"])
+axs[1].plot(history2.history["val_accuracy"])
+axs[1].set_title("Model accuracy")
+axs[1].set_xlabel("Epochs")
+axs[1].set_ylabel("Accuracy")
+axs[1].legend(["Accuracy", "Val Accuracy"])
+
+# Plot F1 score
+axs[2].plot(history2.history["f1_m"], linewidth=5)
+axs[2].plot(history2.history["val_f1_m"])
+axs[2].set_title("Model F1")
+axs[2].set_xlabel("Epochs")
+axs[2].set_ylabel("F1")
+axs[2].legend(["Training f1", "Validation f1"])
+
+# Display the figure
+plt.tight_layout()
+plt.show()
 
 
 # ------------------------ 6. Hyperparameter Tuning ----------------------------
@@ -329,3 +374,7 @@ def build_model_hp(hp):
     )
 
     return model
+
+
+train_generator.n
+X_train_sample.shape
