@@ -32,7 +32,7 @@ X_train.shape, y_train.shape, X_val.shape, y_val.shape, X_test.shape
 
 # Use a subset of data to train the model
 X_train_sample, _, y_train_sample, _ = train_test_split(
-    X_train, y_train, test_size=0.9, stratify=y_train, random_state=42
+    X_train, y_train, test_size=0.7, stratify=y_train, random_state=42
 )
 
 # Now, you can use X_train_sample and y_train_sample to train your model.
@@ -49,11 +49,11 @@ from metrics import precision_m, recall_m, f1_m
 """
 def build_model():
     inputs = keras.Input(shape=(28, 28, 1))
-    x = layers.Conv2D(32, (3, 3), activation="relu")(inputs)
+    x = layers.Conv2D(32, (5, 5), activation="relu")(inputs)
     x = layers.MaxPooling2D((2, 2))(x)
     x = layers.BatchNormalization()(x)
     x = layers.Dropout(0.25)(x)
-    x = layers.Conv2D(64, (3, 3), activation="relu")(x)
+    x = layers.Conv2D(64, (5, 5), activation="relu")(x)
     x = layers.MaxPooling2D((2, 2))(x)
     x = layers.BatchNormalization()(x)
     x = layers.Dropout(0.25)(x)
@@ -105,7 +105,7 @@ def build_model(
     # Define the convolutional layers
     for i in range(num_conv_layers):
         x = layers.Conv2D(
-            32 * (2**i), (3, 3), activation=conv_activation_functions[i]
+            32 * (2**i), (5, 5), activation=conv_activation_functions[i]
         )(x)
         x = layers.MaxPooling2D(pooling_sizes[i])(x)
         x = layers.BatchNormalization()(x)
