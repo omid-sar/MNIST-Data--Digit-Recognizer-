@@ -14,6 +14,7 @@ from keras.utils.vis_utils import plot_model
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
 from keras.preprocessing.image import ImageDataGenerator
+import keras_tuner as kt
 
 
 import matplotlib.pyplot as plt
@@ -32,7 +33,7 @@ X_train.shape, y_train.shape, X_val.shape, y_val.shape, X_test.shape
 
 # Use a subset of data to train the model
 X_train_sample, _, y_train_sample, _ = train_test_split(
-    X_train, y_train, test_size=0.7, stratify=y_train, random_state=42
+    X_train, y_train, test_size=0.9, stratify=y_train, random_state=42
 )
 
 # Now, you can use X_train_sample and y_train_sample to train your model.
@@ -316,6 +317,10 @@ plt.show()
 
 
 # ------------------------ 6. Hyperparameter Tuning ----------------------------
+
+# 6.1 Building hyper-parameter model
+
+
 def build_model_hp(hp):
     inp = keras.layers.Input(shape=[28, 28, 1])
 
@@ -394,11 +399,113 @@ def build_model_hp(hp):
     model.compile(
         loss=keras.losses.CategoricalCrossentropy(),
         optimizer=keras.optimizers.Adam(learning_rate=0.0001),
-        metrics=["accuracy", f1_metric, recall_metric, precision_metric],
+        metrics=["accuracy", precision_m, recall_m, f1_m],
     )
 
     return model
 
 
-train_generator.n
-X_train_sample.shape
+tuner = kt.Hyperband(
+    hypermodel=build_model_hp,
+    objective="val_loss",
+    max_epochs=50,
+    executions_per_trial=2,
+    overwrite=False,
+    project_name="hyperband_results",
+)
+
+tuner.search_space_summary()
+k
+
+
+from keras.models import Sequential
+from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+from kerastuner import RandomSearch, HyperModel
+
+
+class CNNHyperModel(HyperModel):
+    def __init__(self, input_shape, num_classes):
+        self.input_shape = input_shape
+        self.num_classes = num_classes
+
+    def build(self, hp):
+        model = Sequential()
+
+        # Convolutional layers
+        model.add(
+            Conv2D(
+                filters=hp.Int("conv_1_filter", min_value=16, max_value=64, step=16),
+                kernel_size=hp.Choice("conv_1_kernel", values=[3, 5]),
+                activation="relu",
+                input_shape=self.input_shape,
+            )
+        )
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(
+            Dropout(
+                rate=hp.Float("conv_1_dropout", min_value=0.0, max_value=0.5, step=0.1)
+            )
+        )
+
+        for i in range(hp.Int("additional_conv_layers", 1, 3)):
+            model.add(
+                Conv2D(
+                    filters=hp.Int(
+                        f"conv_{i+2}_filter", min_value=16, max_value=64, step=16
+                    ),
+                    kernel_size=hp.Choice(f"conv_{i+2}_kernel", values=[3, 5]),
+                    activation="relu",
+                )
+            )
+            model.add(MaxPooling2D(pool_size=(2, 2)))
+            model.add(
+                Dropout(
+                    rate=hp.Float(
+                        f"conv_{i+2}_dropout", min_value=0.0, max_value=0.5, step=0.1
+                    )
+                )
+            )
+
+        model.add(Flatten())
+
+        # Dense layers
+        model.add(
+            Dense(
+                units=hp.Int("dense_1_units", min_value=32, max_value=128, step=16),
+                activation="relu",
+            )
+        )
+        model.add(
+            Dropout(
+                rate=hp.Float("dense_1_dropout", min_value=0.0, max_value=0.5, step=0.1)
+            )
+        )
+
+        for i in range(hp.Int("additional_dense_layers", 1, 2)):
+            model.add(
+                Dense(
+                    units=hp.Int(
+                        f"dense_{i+2}_units", min_value=32, max_value=128, step=16
+                    ),
+                    activation="relu",
+                )
+            )
+            model.add(
+                Dropout(
+                    rate=hp.Float(
+                        f"dense_{i+2}_dropout", min_value=0.0, max_value=0.5, step=0.1
+                    )
+                )
+            )
+
+        # Output layer
+        model.add(Dense(self.num_classes, activation="softmax"))
+
+        # Compiling the model
+        model.compile(
+            optimizer=keras.optimizers.Adam(hp.Choice("learning_rate", [1e-2, 1e-3])),
+            loss="sparse_categorical_crossentropy",
+            metrics=["accuracy"],
+        )
+
+        return model
