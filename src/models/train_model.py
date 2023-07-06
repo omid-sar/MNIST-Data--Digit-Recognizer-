@@ -325,9 +325,7 @@ def build_model_hp(hp):
     inp = keras.layers.Input(shape=[28, 28, 1])
 
     dropout = hp.Choice("conv_block_dropout", [0.125, 0.25, 0.375, 0.5])
-    conv_kernel_size = hp.Choice(
-        "conv_kernel_size", [5]
-    )  # Kernel size 5 is optimal after mutliple testing experiments
+    conv_kernel_size = hp.Choice("conv_kernel_size", [3, 5])
 
     n_layers = hp.Choice("n_conv_blocks", [2, 3, 4])
 
@@ -405,107 +403,99 @@ def build_model_hp(hp):
     return model
 
 
-tuner = kt.Hyperband(
+# 6.2 RandomSearch HyperParametres
+#
+# for final hyperparametrs tunning, i wll set MAX_TRIALS= 100 or 150
+#
+#
+
+tuner = kt.RandomSearch(
     hypermodel=build_model_hp,
     objective="val_loss",
-    max_epochs=50,
-    executions_per_trial=2,
+    max_trials=5,
     overwrite=False,
-    project_name="hyperband_results",
+    directory="../../models/random_search",
+    project_name="random_search_trials",
 )
 
 tuner.search_space_summary()
-k
+
+tuner.search(
+    train_generator,
+    validation_data=(X_val, y_val),
+    epochs=30,
+    steps_per_epoch=steps_per_epoch,
+    callbacks=[
+        keras.callbacks.EarlyStopping(
+            monitor="val_loss",
+            mode="min",
+            patience=10,
+            min_delta=0.005,
+            restore_best_weights=True,
+        ),
+        keras.callbacks.ReduceLROnPlateau(monitor="val_loss", patience=3),
+    ],
+)
 
 
-from keras.models import Sequential
-from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
-from kerastuner import RandomSearch, HyperModel
+top_model_random = tuner.get_best_models(1)[0]
+top_model_hps_random = tuner.get_best_hyperparameters(1)[0]
+best_hyperparameters_random = tuner.get_best_hyperparameters()[0].values
+
+print(top_model_hps_random.values)
+top_model_random.summary()
+
+# 6.2.2 save RandomSearch model and hyperparametrs
+top_model_random.save("../../models/random_search/top_model_random.h5")
+
+with open("../../models/random_search/hyperparameters_random.pkl", "wb") as f:
+    pickle.dump(best_hyperparameters_random, f)
 
 
-class CNNHyperModel(HyperModel):
-    def __init__(self, input_shape, num_classes):
-        self.input_shape = input_shape
-        self.num_classes = num_classes
+# 6.3 HyperBand HyperParameters
+#
+#
+# for final hyperparametrs tunning, i wll set MAX_EPOCHS= 50 and executions_per_trial=2
+#
+#
+tuner2 = kt.Hyperband(
+    hypermodel=build_model_hp,
+    objective="val_loss",
+    max_epochs=3,
+    executions_per_trial=1,
+    overwrite=False,
+    directory="../../models/hyper_band",
+    project_name="hyperband_results_trials",
+)
 
-    def build(self, hp):
-        model = Sequential()
+tuner2.search_space_summary()
 
-        # Convolutional layers
-        model.add(
-            Conv2D(
-                filters=hp.Int("conv_1_filter", min_value=16, max_value=64, step=16),
-                kernel_size=hp.Choice("conv_1_kernel", values=[3, 5]),
-                activation="relu",
-                input_shape=self.input_shape,
-            )
-        )
-        model.add(MaxPooling2D(pool_size=(2, 2)))
-        model.add(
-            Dropout(
-                rate=hp.Float("conv_1_dropout", min_value=0.0, max_value=0.5, step=0.1)
-            )
-        )
+tuner2.search(
+    train_generator,
+    validation_data=(X_val, y_val),
+    epochs=30,
+    steps_per_epoch=steps_per_epoch,
+    callbacks=[
+        keras.callbacks.EarlyStopping(
+            monitor="val_loss",
+            mode="min",
+            patience=10,
+            min_delta=0.005,
+            restore_best_weights=True,
+        ),
+        keras.callbacks.ReduceLROnPlateau(monitor="val_loss", patience=3),
+    ],
+)
 
-        for i in range(hp.Int("additional_conv_layers", 1, 3)):
-            model.add(
-                Conv2D(
-                    filters=hp.Int(
-                        f"conv_{i+2}_filter", min_value=16, max_value=64, step=16
-                    ),
-                    kernel_size=hp.Choice(f"conv_{i+2}_kernel", values=[3, 5]),
-                    activation="relu",
-                )
-            )
-            model.add(MaxPooling2D(pool_size=(2, 2)))
-            model.add(
-                Dropout(
-                    rate=hp.Float(
-                        f"conv_{i+2}_dropout", min_value=0.0, max_value=0.5, step=0.1
-                    )
-                )
-            )
+top_model_hyperband = tuner2.get_best_models(1)[0]
+top_model_hps_hyperband = tuner2.get_best_hyperparameters(1)[0]
+best_hyperparameters_hyperband = tuner2.get_best_hyperparameters()[0].values
 
-        model.add(Flatten())
+print(top_model_hps_hyperband.values)
+top_model_hyperband.summary()
 
-        # Dense layers
-        model.add(
-            Dense(
-                units=hp.Int("dense_1_units", min_value=32, max_value=128, step=16),
-                activation="relu",
-            )
-        )
-        model.add(
-            Dropout(
-                rate=hp.Float("dense_1_dropout", min_value=0.0, max_value=0.5, step=0.1)
-            )
-        )
+# 6.2.2 save HyperBand model and hyperparametrs
+top_model_hyperband.save("../../models/hyper_band/top_model_hyperband.h5")
 
-        for i in range(hp.Int("additional_dense_layers", 1, 2)):
-            model.add(
-                Dense(
-                    units=hp.Int(
-                        f"dense_{i+2}_units", min_value=32, max_value=128, step=16
-                    ),
-                    activation="relu",
-                )
-            )
-            model.add(
-                Dropout(
-                    rate=hp.Float(
-                        f"dense_{i+2}_dropout", min_value=0.0, max_value=0.5, step=0.1
-                    )
-                )
-            )
-
-        # Output layer
-        model.add(Dense(self.num_classes, activation="softmax"))
-
-        # Compiling the model
-        model.compile(
-            optimizer=keras.optimizers.Adam(hp.Choice("learning_rate", [1e-2, 1e-3])),
-            loss="sparse_categorical_crossentropy",
-            metrics=["accuracy"],
-        )
-
-        return model
+with open("../../models/hyper_band/hyperparameters_hyperband.pkl", "wb") as f:
+    pickle.dump(best_hyperparameters_hyperband, f)
