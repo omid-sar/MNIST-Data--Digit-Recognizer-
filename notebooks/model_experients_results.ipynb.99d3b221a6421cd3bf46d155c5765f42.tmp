@@ -1,8 +1,0 @@
-fig, axes = plt.subplots(3, 8, figsize=(12, 6))
-fig.suptitle("Augmented images for test example")
-for i in range(3):
-    for j in range(8):
-        augmented_example_X = datagen.flow(temp_example_X, batch_size=1).next()
-        axes[i, j].imshow(augmented_example_X.squeeze(), cmap="Greys")
-        axes[i, j].set_xticks([])
-        axes[i, j].set_yticks([])

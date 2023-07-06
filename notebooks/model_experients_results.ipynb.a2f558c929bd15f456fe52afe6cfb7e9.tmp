@@ -1,7 +1,0 @@
-top_model_random = tf.keras.models.load_model(
-    "../models/random_search/top_model_random.h5",
-    custom_objects={"f1_m": f1_m, "precision_m": precision_m, "recall_m": recall_m},
-)
-y_val_true = np.argmax(y_val, axis=1)
-y_val_pred = np.argmax(top_model_random.predict(X_val), axis=1)
-accuracy_score(y_val_true, y_val_pred)

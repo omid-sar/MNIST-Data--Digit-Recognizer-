@@ -1,4 +1,0 @@
-model2 = tf.keras.models.load_model(
-    "../models/augmented_best_model.h5",
-    custom_objects={"f1_m": f1_m, "precision_m": precision_m, "recall_m": recall_m},
-)
