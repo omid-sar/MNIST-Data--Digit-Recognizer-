@@ -1,0 +1,4 @@
+test_example = X_train[[12]]
+plt.imshow(test_example[0], cmap="Greys")
+plt.colorbar()
+plt.show()

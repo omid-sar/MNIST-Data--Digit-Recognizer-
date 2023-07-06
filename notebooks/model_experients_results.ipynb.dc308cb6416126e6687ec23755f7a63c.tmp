@@ -1,0 +1,12 @@
+fig = plt.figure(figsize=(15, 15))
+fig.suptitle("Missclassified examples")
+columns = 6
+rows = 6
+for i in range(columns * rows + 1):
+    if i == four_incorrect_examples.shape[0]:
+        break
+    fig.add_subplot(rows, columns, i + 1)
+    plt.imshow(four_incorrect_examples[i], cmap="Greys")
+    plt.title("True:{},Pred:{}".format(cm_index[0], cm_index[1]))
+
+plt.show()

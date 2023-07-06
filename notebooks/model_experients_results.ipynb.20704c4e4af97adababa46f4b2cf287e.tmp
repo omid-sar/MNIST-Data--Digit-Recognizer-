@@ -1,0 +1,31 @@
+layer_names = [layer.name for layer in model.layers]
+for layer_name, feature_map in zip(layer_names, successive_feature_maps):
+    print(feature_map.shape)
+    print(layer_name)
+    if len(feature_map.shape) == 4:
+        n_features = feature_map.shape[-1]  # number of features in the feature map
+        size = feature_map.shape[1]  # feature map shape (1, size, size, n_features)
+
+        # We will tile our images in this matrix
+        display_grid = np.zeros((size, size * n_features))
+
+        # Postprocess the feature to be visually palatable
+        for i in range(n_features):
+            x = feature_map[0, :, :, i]
+            x -= x.mean()
+            x /= x.std()
+            x *= 64
+            x += 128
+            x = np.clip(x, 0, 255).astype("uint8")
+            # Tile each filter into a horizontal grid
+            display_grid[:, i * size : (i + 1) * size] = x
+
+        # Display the grid
+        scale = 20.0 / n_features
+        plt.figure(figsize=(scale * n_features, scale))
+        plt.title(layer_name)
+        plt.grid(False)
+        plt.imshow(display_grid, aspect="auto", cmap="Greys")
+        plt.colorbar()
+
+plt.show()
