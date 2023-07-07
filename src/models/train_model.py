@@ -170,8 +170,8 @@ batch_size = 32
 epochs = 40
 
 history = model.fit(
-    X_train_sample,
-    y_train_sample,
+    X_train,
+    y_train,
     validation_data=(X_val, y_val),
     batch_size=batch_size,
     epochs=epochs,
@@ -246,7 +246,7 @@ we can feed it into our model, and it will continuously generate new,
 augmented images in batches during the training process.
 """
 model2 = build_model()
-train_generator = datagen.flow(X_train_sample, y_train_sample, batch_size=batch_size)
+train_generator = datagen.flow(X_train, y_train, batch_size=batch_size)
 
 steps_per_epoch = train_generator.n // train_generator.batch_size
 print(train_generator.n, train_generator.batch_size, steps_per_epoch)
@@ -461,8 +461,8 @@ with open("../../models/random_search/hyperparameters_random.pkl", "wb") as f:
 tuner2 = kt.Hyperband(
     hypermodel=build_model_hp,
     objective="val_loss",
-    max_epochs=3,
-    executions_per_trial=1,
+    max_epochs=50,
+    executions_per_trial=2,
     overwrite=False,
     directory="../../models/hyper_band",
     project_name="hyperband_results_trials",
