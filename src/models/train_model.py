@@ -318,6 +318,13 @@ plt.show()
 
 # ------------------------ 6. Hyperparameter Tuning ----------------------------
 
+"""
+After incorporating a data augmentation technique, our next step is to identify the ideal 
+hyper-parameter configurations that can optimize the performance of our model.
+To accomplish this, we will utilize the keras-tuner library, which offers
+a range of tuning algorithms such as RandomSearch and HyperBand.
+"""
+
 # 6.1 Building hyper-parameter model
 
 
