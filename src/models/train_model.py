@@ -412,7 +412,7 @@ def build_model_hp(hp):
 tuner = kt.RandomSearch(
     hypermodel=build_model_hp,
     objective="val_loss",
-    max_trials=5,
+    max_trials=100,
     overwrite=False,
     directory="../../models/random_search",
     project_name="random_search_trials",
