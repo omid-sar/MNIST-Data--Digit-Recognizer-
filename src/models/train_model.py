@@ -529,3 +529,24 @@ top_10_models = tuner.get_best_models(10)
 
 # We have now grouped top models into 4 groups; top 2, top 3, top 5 and top 10.
 # We now need to find which group has highest validation accuracy.
+
+
+def ensemble_models(models, data):
+    results = np.zeros((data.shape[0], 10))
+    for i in range(len(models)):
+        results = results + models[i].predict(data)
+
+    results = np.argmax(results, axis=1)
+    results = pd.Series(results, name="Label")
+    return results
+
+
+# We've developed a function for a voting classifier to implement our final ensemble prediction.
+# For every data point, each model casts a vote for a certain outcome. The outcome that garners
+# the most votes ultimately becomes the final prediction for that specific data point.
+
+results = ensemble_models(top_2_models, X_val)
+results = pd.concat(
+    [pd.Series(np.arange(1, X_val.shape[0] + 1, 1), name="ImageId"), results], axis=1
+)
+print("Accuracy", accuracy_score(y_val_true, results["Label"].values))
