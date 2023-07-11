@@ -427,6 +427,7 @@ tuner = kt.RandomSearch(
 
 tuner.search_space_summary()
 
+"""
 tuner.search(
     train_generator,
     validation_data=(X_val, y_val),
@@ -443,7 +444,7 @@ tuner.search(
         keras.callbacks.ReduceLROnPlateau(monitor="val_loss", patience=3),
     ],
 )
-
+"""
 
 top_model_random = tuner.get_best_models(1)[0]
 top_model_hps_random = tuner.get_best_hyperparameters(1)[0]
@@ -477,6 +478,7 @@ tuner2 = kt.Hyperband(
 
 tuner2.search_space_summary()
 
+"""
 tuner2.search(
     train_generator,
     validation_data=(X_val, y_val),
@@ -493,6 +495,8 @@ tuner2.search(
         keras.callbacks.ReduceLROnPlateau(monitor="val_loss", patience=3),
     ],
 )
+"""
+
 
 top_model_hyperband = tuner2.get_best_models(1)[0]
 top_model_hps_hyperband = tuner2.get_best_hyperparameters(1)[0]
@@ -506,3 +510,5 @@ top_model_hyperband.save("../../models/hyper_band/top_model_hyperband.h5")
 
 with open("../../models/hyper_band/hyperparameters_hyperband.pkl", "wb") as f:
     pickle.dump(best_hyperparameters_hyperband, f)
+
+# ------------------------------ 7. Ensembling ---------------------------------
