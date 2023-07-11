@@ -512,3 +512,20 @@ with open("../../models/hyper_band/hyperparameters_hyperband.pkl", "wb") as f:
     pickle.dump(best_hyperparameters_hyperband, f)
 
 # ------------------------------ 7. Ensembling ---------------------------------
+"""
+Let's proceed to our final strategy, known as Ensembling.
+
+Ensembling is a process where we use multiple models together to make predictions,
+with the aim of getting better results. The idea is that using three models together 
+should provide better results than using just one model alone. This is because each model 
+will have its own strengths and weaknesses, and the weaknesses of one model can be 
+compensated by the strengths of another model.
+
+"""
+top_2_models = tuner.get_best_models(2)
+top_3_models = tuner.get_best_models(3)
+top_5_models = tuner.get_best_models(5)
+top_10_models = tuner.get_best_models(10)
+
+# We have now grouped top models into 4 groups; top 2, top 3, top 5 and top 10.
+# We now need to find which group has highest validation accuracy.
