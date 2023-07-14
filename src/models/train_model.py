@@ -522,10 +522,10 @@ will have its own strengths and weaknesses, and the weaknesses of one model can 
 compensated by the strengths of another model.
 
 """
-top_2_models = tuner.get_best_models(2)
-top_3_models = tuner.get_best_models(3)
-top_5_models = tuner.get_best_models(5)
-top_10_models = tuner.get_best_models(10)
+top_2_models = tuner2.get_best_models(2)
+top_3_models = tuner2.get_best_models(3)
+top_5_models = tuner2.get_best_models(5)
+top_10_models = tuner2.get_best_models(10)
 
 # We have now grouped top models into 4 groups; top 2, top 3, top 5 and top 10.
 # We now need to find which group has highest validation accuracy.
@@ -545,7 +545,33 @@ def ensemble_models(models, data):
 # For every data point, each model casts a vote for a certain outcome. The outcome that garners
 # the most votes ultimately becomes the final prediction for that specific data point.
 
+
+from sklearn.metrics import accuracy_score
+
+y_val_true = np.argmax(y_val, axis=1)
+
+
 results = ensemble_models(top_2_models, X_val)
+results = pd.concat(
+    [pd.Series(np.arange(1, X_val.shape[0] + 1, 1), name="ImageId"), results], axis=1
+)
+print("Accuracy", accuracy_score(y_val_true, results["Label"].values))
+
+
+results = ensemble_models(top_3_models, X_val)
+results = pd.concat(
+    [pd.Series(np.arange(1, X_val.shape[0] + 1, 1), name="ImageId"), results], axis=1
+)
+print("Accuracy", accuracy_score(y_val_true, results["Label"].values))
+
+
+results = ensemble_models(top_5_models, X_val)
+results = pd.concat(
+    [pd.Series(np.arange(1, X_val.shape[0] + 1, 1), name="ImageId"), results], axis=1
+)
+print("Accuracy", accuracy_score(y_val_true, results["Label"].values))
+
+results = ensemble_models(top_10_models, X_val)
 results = pd.concat(
     [pd.Series(np.arange(1, X_val.shape[0] + 1, 1), name="ImageId"), results], axis=1
 )
