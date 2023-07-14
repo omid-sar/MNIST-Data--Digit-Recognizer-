@@ -591,3 +591,20 @@ results = pd.concat(
     [pd.Series(np.arange(1, X_test.shape[0] + 1, 1), name="ImageId"), results], axis=1
 )
 results.to_csv("../../models/test_results_ensemble.csv", index=False)
+
+# We will compute the accuracy score for the top 2 ensembled models for comparison later.
+
+
+# 7.3 Ensembling on the best model from hyper-parameter tuning.
+
+"""
+Let's explore an alternative approach to ensemble modeling.
+
+Rather than composing the top models from our tuning search, which feature varied configurations,
+we aim to ensemble using only our highest-performing model. The strategy is to train this model 
+multiple times. So, here's our revised concept:
+
+We'll carry out multiple training rounds with our optimal model. Each iteration will involve 
+a unique pairing of training and validation data, thereby ensuring comprehensive training across
+the entire dataset.
+"""
