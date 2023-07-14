@@ -702,8 +702,119 @@ models = [0] * 10
 for i in range(n_models):
     models[i] = build_best_model()
 
+sys.path.append("../../features/")
+from build_features import feature_pipeline, target_pipeline
 
-models
+df_train = pd.read_csv("../../data/raw/train.csv")
+X = df_train.drop("label", axis=1)
+y = df_train["label"]
 
 
-feat
+historys = [0] * n_models
+for i in range(n_models):
+    X_train, X_val, y_train, y_val = train_test_split(
+        X, y, test_size=0.1
+    )  # Random data each time
+
+    X_train = feature_pipeline.fit_transform(X_train)
+    y_train = target_pipeline.fit_transform(y_train.values.reshape(-1, 1))
+    y_train = y_train.toarray()
+
+    X_val = feature_pipeline.fit_transform(X_val)
+    y_val = target_pipeline.fit_transform(y_val.values.reshape(-1, 1))
+    y_val = y_val.toarray()
+
+    train_generator = datagen.flow(X_train, y_train, batch_size=batch_size)
+
+    historys[i] = models[i].fit(
+        train_generator,
+        validation_data=(X_val, y_val),
+        epochs=40,
+        steps_per_epoch=steps_per_epoch,
+        callbacks=[
+            keras.callbacks.EarlyStopping(
+                monitor="val_loss",
+                mode="min",
+                patience=10,
+                min_delta=0.005,
+                restore_best_weights=True,
+            ),
+            keras.callbacks.ReduceLROnPlateau(monitor="val_loss", patience=3),
+        ],
+        verbose=0,
+    )
+
+    models[i].save("../../models/top_model_ensemble/model_{}".format(str(i)))
+
+    idx = np.argmin(historys[i].history["val_loss"])
+    print(
+        "Model: {} || Training loss: {}, Validation loss: {}, Training accuracy: {}, Validation accuracy: {}".format(
+            i + 1,
+            round(historys[i].history["loss"][idx], 4),
+            round(historys[i].history["val_loss"][idx], 4),
+            round(historys[i].history["accuracy"][idx], 4),
+            round(historys[i].history["val_accuracy"][idx], 4),
+        )
+    )
+
+# Load models if needed
+try:
+    models
+except:
+    n_models = 10
+    models = [0] * 10
+    for i in range(n_models):
+        models[i] = keras.models.load_model(
+            "../../models/top_model_ensemble/model_{}".format(str(i)),
+            custom_objects={
+                "f1_m": f1_m,
+                "precision_m": precision_m,
+                "recall_m": recall_m,
+            },
+        )
+
+# models_ordered
+models_val_idxs = np.argsort(models_val_acc)[::-1]
+models_ordered = np.array(models)[models_val_idxs]
+
+# Now lets group the models into; best_model, top 2, top 3, top 5 and top 10.
+
+models_ordered_1 = models_ordered[0:1]
+models_ordered_2 = models_ordered[0:2]
+models_ordered_3 = models_ordered[0:3]
+models_ordered_5 = models_ordered[0:5]
+models_ordered_10 = models_ordered[0:10]
+
+# Lets check the scores on validation set for each group.
+
+y_val_true = np.argmax(y_val, axis=1)
+
+results = ensemble_models(models_ordered_1, X_val)
+results = pd.concat(
+    [pd.Series(np.arange(1, X_val.shape[0] + 1, 1), name="ImageId"), results], axis=1
+)
+print("Accuracy", accuracy_score(y_val_true, results["Label"].values))
+
+results = ensemble_models(models_ordered_2, X_val)
+results = pd.concat(
+    [pd.Series(np.arange(1, X_val.shape[0] + 1, 1), name="ImageId"), results], axis=1
+)
+print("Accuracy", accuracy_score(y_val_true, results["Label"].values))
+
+results = ensemble_models(models_ordered_3, X_val)
+results = pd.concat(
+    [pd.Series(np.arange(1, X_val.shape[0] + 1, 1), name="ImageId"), results], axis=1
+)
+print("Accuracy", accuracy_score(y_val_true, results["Label"].values))
+
+results = ensemble_models(models_ordered_5, X_val)
+results = pd.concat(
+    [pd.Series(np.arange(1, X_val.shape[0] + 1, 1), name="ImageId"), results], axis=1
+)
+print("Accuracy", accuracy_score(y_val_true, results["Label"].values))
+
+results = ensemble_models(models_ordered_10, X_val)
+results = pd.concat(
+    [pd.Series(np.arange(1, X_val.shape[0] + 1, 1), name="ImageId"), results], axis=1
+)
+print("Accuracy", accuracy_score(y_val_true, results["Label"].values))
