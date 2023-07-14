@@ -608,3 +608,89 @@ We'll carry out multiple training rounds with our optimal model. Each iteration 
 a unique pairing of training and validation data, thereby ensuring comprehensive training across
 the entire dataset.
 """
+
+# The best network configuration from our hyperparameter tuning search is as follows:
+{
+    "conv_block_dropout": 0.25,
+    "conv_kernel_size": 3,
+    "n_conv_blocks": 4,
+    "filter_combination_choice": 3,
+    "n_fc_layers": 1,
+    "fc_units_combination_choice": 0,
+    "fc_dropout": 0.25,
+    "tuner/epochs": 50,
+    "tuner/initial_epoch": 17,
+    "tuner/bracket": 2,
+    "tuner/round": 2,
+    "tuner/trial_id": "0067",
+}
+
+
+def build_best_model():
+    inp = keras.layers.Input(shape=[28, 28, 1])
+
+    conv_block_dropout = 0.25  # "conv_block_dropout": 0.25
+    conv_kernel_size = 3  # "conv_kernel_size": 3
+    n_conv_blocks = 4  # "n_conv_blocks": 4
+    filter_combination_choice = 3  # "filter_combination_choice": 3
+
+    # We select the appropriate filter settings
+    filter_settings = [
+        128,
+        128,
+        256,
+        256,
+    ]  # Based on filter_combination_choice and n_conv_blocks
+
+    # Convolutional blocks
+    for i in range(n_conv_blocks):
+        if i == 0:
+            x = keras.layers.Conv2D(
+                filters=filter_settings[i],
+                kernel_size=conv_kernel_size,
+                strides=1,
+                padding="SAME",
+                activation="relu",
+            )(inp)
+        else:
+            x = keras.layers.Conv2D(
+                filters=filter_settings[i],
+                kernel_size=conv_kernel_size,
+                strides=1,
+                padding="SAME",
+                activation="relu",
+            )(x)
+
+        x = keras.layers.MaxPool2D(pool_size=2)(x)
+        x = keras.layers.BatchNormalization()(x)
+        x = keras.layers.Dropout(conv_block_dropout)(x)
+
+    x = keras.layers.Flatten()(x)
+
+    n_fc_layers = 1  # "n_fc_layers": 1
+    fc_units_combination_choice = 0  # "fc_units_combination_choice": 0
+
+    # We select the appropriate fully connected units settings
+    fc_units = [128]  # Based on n_fc_layers and fc_units_combination_choice
+
+    # Fully connected layers
+    fc_dropout = 0.25  # "fc_dropout": 0.25
+    for j in range(n_fc_layers):
+        x = keras.layers.Dense(fc_units[j], activation="relu")(x)
+        x = keras.layers.Dropout(fc_dropout)(x)
+
+    out = keras.layers.Dense(10, activation="softmax")(x)
+
+    model = keras.Model(inputs=inp, outputs=out)
+
+    # Compile the model
+    model.compile(
+        loss=keras.losses.CategoricalCrossentropy(),
+        optimizer=keras.optimizers.Adam(learning_rate=0.0001),
+        metrics=["accuracy", precision_m, recall_m, f1_m],
+    )
+
+    return model
+
+
+model = build_best_model()
