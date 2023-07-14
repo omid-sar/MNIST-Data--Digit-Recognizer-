@@ -522,6 +522,8 @@ will have its own strengths and weaknesses, and the weaknesses of one model can 
 compensated by the strengths of another model.
 
 """
+
+# 7.1 Ensembling top models from hyper-parameter tuning
 top_2_models = tuner2.get_best_models(2)
 top_3_models = tuner2.get_best_models(3)
 top_5_models = tuner2.get_best_models(5)
@@ -576,3 +578,16 @@ results = pd.concat(
     [pd.Series(np.arange(1, X_val.shape[0] + 1, 1), name="ImageId"), results], axis=1
 )
 print("Accuracy", accuracy_score(y_val_true, results["Label"].values))
+
+
+# After checking the accuracy score of the differents groups on the validation data, we can see
+# top 2 and top 3 groups have the highest score. We will choose the top 2 ensembled model for
+# computational efficiency.
+
+
+# 7.2 Save the top 2 models
+results = ensemble_models(top_2_models, X_test)
+results = pd.concat(
+    [pd.Series(np.arange(1, X_test.shape[0] + 1, 1), name="ImageId"), results], axis=1
+)
+results.to_csv("../../models/test_results_ensemble.csv", index=False)
