@@ -694,3 +694,16 @@ def build_best_model():
 
 
 model = build_best_model()
+
+# We built our best model. So we will create 10 copies of this model and train them.
+
+n_models = 10
+models = [0] * 10
+for i in range(n_models):
+    models[i] = build_best_model()
+
+
+models
+
+
+feat
