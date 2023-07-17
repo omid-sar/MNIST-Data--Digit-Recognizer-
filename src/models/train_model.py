@@ -757,6 +757,8 @@ for i in range(n_models):
         )
     )
 
+# This took some time (~8 hour), but the models are now trained and ready for testing.
+
 # Load models if needed
 try:
     models
